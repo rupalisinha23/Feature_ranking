@@ -32,26 +32,34 @@ class FeaturePreparer:
 
 
     def seperate_variable_types(self, df) -> None:
+        """
+        method to check if the features are categorical or numerical.
+        can be extended to temporal and other datatypes as well.
+        :param df: dataframe
+        :return: None
+        """
         # find categorical variables
         self.categorical = [var for var in df.columns if df[var].dtype == 'O']
-        print('There are {} categorical variables'.format(len(self.categorical)))
+        print('There is {} categorical variable.'.format(len(self.categorical)))
 
 
         # find numerical variables
         numerical = [var for var in df.columns if df[var].dtype != 'O']
-        print('There are {} numerical variables'.format(len(numerical)))
+        print('There are {} numerical variables.'.format(len(numerical)))
 
 
     def prepare_data(self,df) -> pd.DataFrame:
         """
         the preprocessing steps have been directly taken from the .ipynb file
+        the method check the null values and fill them with mean.
         :param df: input data
         :return: preprocessed data
         """
         df = df.drop(['sample index'], axis=1)
-        print('Columns present: ',df.columns)
+        print('Columns present: ', list(df.columns))
 
-        # fills NA in all required variables
+        # fills NA in all required variables with the mean
+        count = 0
         for col in df.columns:
             if df.loc[:, (col)].isnull().mean() > 0:
                 # get the mean value from the training data, i.e., self.raw_data
@@ -59,7 +67,9 @@ class FeaturePreparer:
                 # replace it in the data to be passed to the model, i.e., self.prepared_data
                 df[col].fillna(mean_val, inplace=True)
             else:
-                print('There are no null values present in ', col)
+                count +=1
+        if count == len(df.columns):
+            print('There are no null values present in data.')
 
         return df
 
@@ -73,8 +83,13 @@ class ModelManager:
         self.output_path = output_path
 
 
-
     def split_data(self, X, y) -> pd.DataFrame:
+        """
+        split the data into training and test set.
+        :param X: dataframe
+        :param y: dataframe
+        :return: split dataframe
+        """
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=0)
         return X_train, X_test, y_train, y_test
 
@@ -96,6 +111,7 @@ class ModelManager:
 
         feature_scores = pd.concat([df_columns, df_scores], axis=1)
         feature_scores.columns = ['sensor', 'score']
+        print('Filter method complete wth chi2 correlation test.')
 
         return feature_scores.sort_values(by='score', ascending=False).drop(['score'], axis=1).reset_index(drop=True)
 
@@ -103,9 +119,6 @@ class ModelManager:
     def wrapper_method(self, X_train, y_train, df_columns) -> pd.DataFrame:
         """
         Logistic Regression with RFE is used to rank the features.
-        Advantages:
-        Disadvantages:
-        Scalability:
         :param X_train: feature variables
         :param y_train: target variable
         :return: sorted list of sensors with the most important sensor on top
@@ -121,6 +134,9 @@ class ModelManager:
         for i in range(num_features):
             scores.append((rfe.ranking_[i], df_columns[i]))
         scores.sort()
+
+        print('Wrapper method complete using Logistic Regression with RFE.')
+
         return pd.DataFrame(scores, columns=['rank', 'sensor']).drop(['rank'], axis=1)
 
 
@@ -139,9 +155,19 @@ class ModelManager:
         model.fit(X_train, y_train)
         feature_importances = pd.concat([pd.DataFrame(model.feature_importances_),pd.DataFrame(X_columns)],axis=1)
         feature_importances.columns=['score','sensor']
+        print('Embedding method complete with Extra Tree Classifier.')
+
         return feature_importances.sort_values(by='score', ascending=False).drop(['score'], axis=1).reset_index(drop=True)
 
+
     def generate_csv_results(self, filter_df, wrapper_df, embedding_df) -> None:
+        """
+        combines the results from filter, wrapper and embedding method to write to a csv file
+        :param filter_df:
+        :param wrapper_df:
+        :param embedding_df:
+        :return: None
+        """
         if os.path.isfile(self.output_path):
             os.remove(self.output_path)
 
@@ -149,8 +175,14 @@ class ModelManager:
         results.columns=['chi2','logistic_regression_rfe','extra_tree_classifier']
         results.to_csv(r'./output/results.csv', index=None, header=True)
 
+        print('Results.csv generated. Please check the output folder.')
+
 
     def run_pipeline(self):
+        """
+        runs the entire custom made pipeline to rank the features according to their importance
+        :return: generated csv file with results
+        """
         df = self.feature.read_data()
         self.feature.seperate_variable_types(df)
         df = self.feature.prepare_data(df)
