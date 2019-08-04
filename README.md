@@ -32,14 +32,16 @@ There is no one solution. We always have to try out different methods and analyz
 $ python3 -m venv virtual-env-name
 $ source virtual-env-name/bin/activate
 $ pip install -r requirements.txt
+$ python main.py
 ```
 or with anaconda
 ```
 conda create -y -n <conda-env-name> python==3.6
 conda install -f -y -q -n <conda-env-name> -c conda-forge --file requirements.txt
 [source activate/ conda activate] <conda-env-name>
+python main.py
 ```
-4. Run the bash script.
+Alternatively, simple run the provided bash script. It will create environment called ranking for you.
 ```
 $ ./pipeline.sh
 ```
