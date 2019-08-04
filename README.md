@@ -41,7 +41,7 @@ conda install -f -y -q -n <conda-env-name> -c conda-forge --file requirements.tx
 [source activate/ conda activate] <conda-env-name>
 python main.py
 ```
-Alternatively, simple run the provided bash script. It will create environment called ranking for you.
+Alternatively, simple run the provided bash script. It will create the environment called ranking for you.
 ```
 $ ./pipeline.sh
 ```
