@@ -8,6 +8,9 @@ I have created a custom pipeline to automate the process of pre-processing, fitt
 
 
 ### Results and Insights:
+
+![results](img/schema.png)
+
 1. Sensor 8 has the highest importance in all the three methods.
 2. Correlation of one sensor with the target variable does not imply that the same variable will have an important impact in the prediction power of the model. See Sensor 6 and 5 for example.
 3. Sensors 8,4,0,1,3 continue to hold the importance in the top 5 ranks in all the three methods.
