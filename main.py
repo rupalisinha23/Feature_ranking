@@ -14,7 +14,7 @@ random.seed(1234)
 
 class FeaturePreparer:
     """
-    preprocess the data
+    Reads the data and preprocess it.
     """
     def __init__(self, path_to_data):
         self.path = path_to_data
@@ -25,7 +25,7 @@ class FeaturePreparer:
         """
         Check the extention of the file to read the dataset.
         It can be extended to read xlsx, tsv or other file formats.
-        :return: data in dataframe format
+        :return: data in dataframe format, pandas dataframe
         """
         if self.path.split('.')[-1] == 'csv':
             return pd.read_csv(self.path)
@@ -33,9 +33,9 @@ class FeaturePreparer:
 
     def seperate_variable_types(self, df) -> None:
         """
-        method to check if the features are categorical or numerical.
-        can be extended to temporal and other datatypes as well.
-        :param df: dataframe
+        Method to check if the features are categorical or numerical.
+        Can be extended to temporal and other datatypes as well.
+        :param df: raw input dataframe
         :return: None
         """
         # find categorical variables
@@ -50,9 +50,11 @@ class FeaturePreparer:
 
     def prepare_data(self,df) -> pd.DataFrame:
         """
-        the preprocessing steps have been directly taken from the .ipynb file
-        the method check the null values and fill them with mean.
-        :param df: input data
+        The pre-processing steps have been directly taken from the .ipynb file
+        The method check the null values and fill them with mean.
+        Other pre-processing step such as normalizing or standardizing the data can also be extended in this method.
+        But this is not required for this dataset.
+        :param df: input raw data
         :return: preprocessed data
         """
         df = df.drop(['sample index'], axis=1)
@@ -76,7 +78,7 @@ class FeaturePreparer:
 
 class ModelManager:
     """
-    defines, runs the models and generate results
+    Defines the model, run it and generate results.
     """
     def __init__(self,FeaturePreparer, input_path, output_path):
         self.feature = FeaturePreparer(input_path)
@@ -85,10 +87,12 @@ class ModelManager:
 
     def split_data(self, X, y) -> pd.DataFrame:
         """
-        split the data into training and test set.
-        :param X: dataframe
-        :param y: dataframe
-        :return: split dataframe
+        Split the data into training and test set.
+        Train set size: 80%
+        Test set side: 20%
+        :param X: independent features in the form of dataframe
+        :param y: dependent features in the form of dataframe
+        :return: split dataframe into train and test set
         """
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=0)
         return X_train, X_test, y_train, y_test
@@ -97,9 +101,9 @@ class ModelManager:
     def filter_method(self, X, y) -> pd.DataFrame:
         """
         chi2 method is used to rank the features.
-        Advantages:
-        Disadvantages:
-        Scalability:
+        Advantages: easy to implement, less computationally intensive, not dependent on any learning algorithm.
+        Disadvantages: does not account for inter-feature correlation.
+        Scalability: easily scalable to large datasets.
         :param X: feature variables
         :param y: target variable
         :return: sorted list of sensors with the most important sensor on top
@@ -119,6 +123,9 @@ class ModelManager:
     def wrapper_method(self, X_train, y_train, df_columns) -> pd.DataFrame:
         """
         Logistic Regression with RFE is used to rank the features.
+        Advantages: involves inter-feature interaction, easy to implement
+        Disadvantages: overfitting, high computational efficiency for large dataset.
+        Scalability: not a good method to use for large datasets.
         :param X_train: feature variables
         :param y_train: target variable
         :return: sorted list of sensors with the most important sensor on top
@@ -130,7 +137,7 @@ class ModelManager:
         classifier = LogisticRegression(random_state=0)  # can also use regularization parameter here
         classifier.fit(X_train[X_train.columns[rfe.support_]], y_train)
         scores = []
-        num_features = len(df_columns)  # excluding the target variable
+        num_features = len(df_columns)
         for i in range(num_features):
             scores.append((rfe.ranking_[i], df_columns[i]))
         scores.sort()
@@ -143,9 +150,9 @@ class ModelManager:
     def embedding_method(self, X_train, y_train, X_columns) -> pd.DataFrame:
         """
         Extra Tree Classifier is used to rank the features.
-        Advantages:
-        Disadvantages:
-        Scalability:
+        Advantages: reduces the variance, selecting features is a part of learning algorithm.
+        Disadvantages: random splits not good with noisy datasets, may increase bias.
+        Scalability: easily scalable for large datasets.
         :param X_train: feature variables
         :param y_train: target variable
         :param X_columns: list of feature names
@@ -162,7 +169,7 @@ class ModelManager:
 
     def generate_csv_results(self, filter_df, wrapper_df, embedding_df) -> None:
         """
-        combines the results from filter, wrapper and embedding method to write to a csv file
+        Combines the results from filter, wrapper and embedding method to write to a csv file
         :param filter_df:
         :param wrapper_df:
         :param embedding_df:
@@ -180,8 +187,8 @@ class ModelManager:
 
     def run_pipeline(self):
         """
-        runs the entire custom made pipeline to rank the features according to their importance
-        :return: generated csv file with results
+        Runs the entire custom made pipeline to rank the features according to their importance.
+        :return: generated csv file with results in output folder
         """
         df = self.feature.read_data()
         self.feature.seperate_variable_types(df)
