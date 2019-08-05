@@ -9,7 +9,7 @@ I have created a custom pipeline to automate the process of pre-processing, fitt
 
 ### Results and Insights:
 
-![results](img/schema.png)
+![results](img/results.png)
 
 1. Sensor 8 has the highest importance in all the three methods.
 2. Correlation of one sensor with the target variable does not imply that the same variable will have an important impact in the prediction power of the model. See Sensor 6 and 5 for example.
@@ -32,14 +32,16 @@ There is no one solution. We always have to try out different methods and analyz
 $ python3 -m venv virtual-env-name
 $ source virtual-env-name/bin/activate
 $ pip install -r requirements.txt
+$ python main.py
 ```
 or with anaconda
 ```
 conda create -y -n <conda-env-name> python==3.6
 conda install -f -y -q -n <conda-env-name> -c conda-forge --file requirements.txt
 [source activate/ conda activate] <conda-env-name>
+python main.py
 ```
-4. Run the bash script.
+Alternatively, simple run the provided bash script. It will create the environment called ranking for you.
 ```
 $ ./pipeline.sh
 ```
